@@ -10,18 +10,13 @@ const baseConfig = {
   app_version: process.env.npm_package_version,
   expiration_minutes: (parseInt(process.env.CACHE_TTL, 10) || 10) * 60,
   tbk_mall_service: {
-    base_url:
-      ' ',
-    api_key:
-      ' ',
-    api_key_secret:
-      ' '
+    base_url: ' ',
+    api_key: ' ',
+    api_key_secret: ' '
   },
   api_tin: {
-    endpoint:
-      ' ',
-    api_key:
-      ' ',
+    endpoint: ' ',
+    api_key: ' ',
     allowedCodesToRetry: JSON.parse(
       process.env.API_TIN_ALLOWED_CODES_TO_RETRY || '["2","3","5"]'
     )
@@ -87,9 +82,7 @@ const baseConfig = {
     parseInt(process.env.NUMBER_OF_TRANSACTION_TO_PROCCESS) || 20,
   cronValue: process.env.CRON_VALUE || '*/30 * * * * *',
   mongoConnection: {
-    uri:
-      process.env.MONGO_DB_URI ||
-      '',
+    uri: process.env.MONGO_DB_URI || '',
     user: process.env.MONGO_DB_USER || '',
     pass: process.env.MONGO_DB_PASS || '',
     tls: JSON.parse(process.env.TLS || 'true')
