@@ -1,4 +1,4 @@
-APP_NAME=payments-integrations-api-interop
+APP_NAME=retry-engine
 NEST_ENV=local
 FASTIFY_FM_HTTP=disabled
 FASTIFY_FM_LOGGER=disabled
