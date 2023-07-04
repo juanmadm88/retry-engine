@@ -5,7 +5,7 @@ describe('ConfigurationMapper', () => {
     const data: any = {
       country: 'pe',
       enabled: false,
-      timeSerie: {
+      time: {
         '1': '10'
       },
       acquirer: 'sarasa'

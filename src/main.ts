@@ -8,7 +8,6 @@ import {
   NestFastifyApplication
 } from '@nestjs/platform-fastify';
 import { ConfigService } from '@nestjs/config';
-import { InitMongo } from './database/initializer';
 import * as displayRoutes from 'express-routemap';
 import { ValidationPipe } from '@nestjs/common';
 
@@ -61,20 +60,8 @@ async function bootstrap() {
   const rabbitConfig: object = configService.get<object>(
     'appConfig.rabbitConfig'
   );
-  const mongoConfig: object = configService.get<object>(
-    'appConfig.mongoConnection'
-  );
   app.connectMicroservice(rabbitConfig);
   await app.startAllMicroservices();
-  await InitMongo.connect(mongoConfig)
-    .then(() => {
-      console.log(`\x1b[33m Successfully connected to mongoDB`);
-    })
-    .catch((error) => {
-      console.log(
-        `\x1b[33m[Error] An Error Occurred while trying to connect mongoDB, reason: ${error}`
-      );
-    });
   await app.listen(appPort, async () => {
     /* eslint-disable */
     console.log(`\x1b[33m starting  the microservice [ ${configService.get('appConfig.app_name')} ]. at ${Date().toString()}`);

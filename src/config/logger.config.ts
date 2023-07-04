@@ -9,9 +9,7 @@ const LOGGER_CONFIG = {
   toStdout: process.env.NODE_LOG_TO_STDOUT || 'true',
   toFile: process.env.NODE_LOG_TO_FILE || 'true',
   enabled: process.env.NODE_LOG_ENABLED || 'true',
-  serviceName:
-    process.env.NODE_LOG_SERVICE_NAME ||
-    'payments-integrations-retry-engine-v2',
+  serviceName: process.env.NODE_LOG_SERVICE_NAME || 'retry-engine',
   outputFormat: process.env.NODE_LOG_OUTPUT_FORMAT || 'pino-log-generic',
   inputFormat:
     process.env.NODE_LOG_INPUT_FORMAT || 'module-method-description-message',

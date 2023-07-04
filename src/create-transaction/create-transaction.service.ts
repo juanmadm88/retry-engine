@@ -22,7 +22,11 @@ import {
   TransactionLog,
   TransactionLogSchema
 } from '../database/schemas/transaction-log.schema';
-import { ConfigurationService } from '../mongo-configuration/configuration.service';
+import { RetryPolicyService } from '../retry-policy/retry-policy.service';
+import { ConfigurationDTO } from '../retry-policy/dtos';
+import buildResponse from '../utils/build-response';
+import { NonSerieDTO } from '../retry-policy/dtos/non-serie.dto';
+import generateKey from '../utils/generate-key';
 @Injectable()
 export class CreateTransactionService implements IService {
   private logger: LoggerService;
@@ -34,7 +38,7 @@ export class CreateTransactionService implements IService {
     private readonly tbkMallService: TbkMallService,
     private configService: ConfigService,
     @Inject('RABBIT_PRODUCER') private producer: ClientProxy,
-    private readonly configurationService: ConfigurationService
+    private readonly retryPolicyService: RetryPolicyService
   ) {
     this.logger = new LoggerService(this.constructor.name);
     this.createMethodName =
@@ -45,7 +49,7 @@ export class CreateTransactionService implements IService {
       transactionType: any,
       transId: any,
       typeCall: TypeCall,
-      failCodes: string[];
+      failCodesConfig: string[];
     const traceId: any = request.trace_id;
 
     try {
@@ -53,9 +57,9 @@ export class CreateTransactionService implements IService {
       transactionType = request.options.body.transaction_type;
       transId = request.options.body.transaction.unique_id;
       typeCall = buildTypeCall(business.name);
-      failCodes =
-        request.failCodes ||
-        this.configService.get<Array<string>>('appConfig.failCodes');
+      failCodesConfig = this.configService.get<Array<string>>(
+        'appConfig.failCodes'
+      );
       const allowedCodesToRetry: string[] = this.configService.get<
         Array<string>
       >('appConfig.api_tin.allowedCodesToRetry');
@@ -113,7 +117,7 @@ export class CreateTransactionService implements IService {
         error,
         typeCall,
         traceId,
-        failCodes,
+        failCodesConfig,
         businessName: business.name
       });
       throw error;
@@ -132,7 +136,7 @@ export class CreateTransactionService implements IService {
       transactionType: any,
       transId: any,
       typeCall: any,
-      failCodes: string[];
+      failCodesConfig: string[];
     const traceId: any = record.getTraceId();
     const request: any = record.getData();
     const trsUniqueId: any = record.getTrsUniqueId();
@@ -141,9 +145,9 @@ export class CreateTransactionService implements IService {
     const id = record.getId();
 
     try {
-      failCodes =
-        request.failCodes ||
-        this.configService.get<Array<string>>('appConfig.failCodes');
+      failCodesConfig = this.configService.get<Array<string>>(
+        'appConfig.failCodes'
+      );
       const allowedCodesToRetry: string[] = this.configService.get<
         Array<string>
       >('appConfig.api_tin.allowedCodesToRetry');
@@ -203,16 +207,25 @@ export class CreateTransactionService implements IService {
         typeCall,
         traceId,
         retries,
-        failCodes,
+        failCodesConfig,
         businessName: business.name
       });
       throw error;
     }
   }
+
   private handlerErrorForReprocessTransaction = async (
     args: any
   ): Promise<any> => {
-    const { record, error, typeCall, traceId, failCodes, businessName } = args;
+    const {
+      record,
+      error,
+      typeCall,
+      traceId,
+      failCodesConfig,
+      businessName,
+      retries
+    } = args;
     const timeoutCodes: string[] = this.configService.get<Array<string>>(
       'appConfig.timeoutCodes'
     );
@@ -234,17 +247,20 @@ export class CreateTransactionService implements IService {
         traceId,
         error
       );
-    const timeSerie: object = await this.getTimeSerie(businessName);
+    const config: ConfigurationDTO | undefined = await this.getConfiguration(
+      businessName
+    );
+    const failCodes: string[] = config?.getFailCodes() || failCodesConfig;
     const numberOfRetriesAreAllowed =
-      args.retries < Object.keys(timeSerie).length;
+      retries < this.getRetriesMaximunByType(config);
     if (
       allowedToRetry(statusCode, failCodes, error, timeoutCodes) &&
       isLessThanTwentyFourHours(createAt) &&
       numberOfRetriesAreAllowed
     ) {
       const seconds: number = this.buildSeconds(
-        timeSerie[args.retries],
-        args.retries,
+        this.getTimeValueByType(config, retries),
+        retries,
         configTimeSerie
       );
       const nextExecution = new Date(
@@ -298,74 +314,87 @@ export class CreateTransactionService implements IService {
   };
 
   public async retry(): Promise<any> {
+    let country: string, key: string;
     try {
-      const today = new Date();
-      const nextDay = new Date(new Date().setHours(23, 59));
-      let amountOfTrxReprocessedOk = 0;
-      let amountOfTrxReprocessedWithError = 0;
-      let counter: any;
-      const filter = {
-        $expr: {
-          $and: [
-            {
-              $lt: [
-                {
-                  $dateDiff: {
-                    startDate: '$createdAt',
-                    endDate: nextDay,
-                    unit: 'millisecond'
-                  }
-                },
-                86400000
-              ]
-            },
-            { $eq: [true, '$to_be_reprocessed'] },
-            { $lte: ['$next_execution', today] },
-            { $regexMatch: { input: '$type_call', regex: /Request/ } }
-          ]
-        }
-      };
-      const response: TransactionLogDTO[] = await this.mongoDBService.getData(
-        filter,
-        { name: TransactionLog.name, schema: TransactionLogSchema }
-      );
-      if (response?.length > 0) {
-        const transactionsPromises: any[] = [];
-        response.forEach((element: TransactionLogDTO) => {
+      country = this.configService.get<string>('appConfig.country');
+      key = generateKey({ country, flag: 'allowedToReprocess' });
+      const flag: any = await this.cacheManager.get(key);
+      if (!flag || flag?.allowedToReprocess) {
+        await this.cacheManager.set(key, { allowedToReprocess: false });
+        const today = new Date();
+        const nextDay = new Date(new Date().setHours(23, 59));
+        let amountOfTrxReprocessedOk = 0;
+        let amountOfTrxReprocessedWithError = 0;
+        let counter: any;
+        const filter = {
+          $expr: {
+            $and: [
+              {
+                $lt: [
+                  {
+                    $dateDiff: {
+                      startDate: '$createdAt',
+                      endDate: nextDay,
+                      unit: 'millisecond'
+                    }
+                  },
+                  86400000
+                ]
+              },
+              { $eq: [true, '$to_be_reprocessed'] },
+              { $lte: ['$next_execution', today] },
+              { $regexMatch: { input: '$type_call', regex: /Request/ } }
+            ]
+          }
+        };
+        const response: TransactionLogDTO[] = await this.mongoDBService.getData(
+          filter,
+          { name: TransactionLog.name, schema: TransactionLogSchema }
+        );
+        if (response?.length > 0) {
+          const transactionsPromises: any[] = [];
+          response.forEach((element: TransactionLogDTO) => {
+            this.logger.info(
+              this.retry.name,
+              ' Reprocessing transaction ',
+              element
+            );
+            transactionsPromises.push(this.reprocessTransaction(element));
+          });
+          counter = await Promise.allSettled(transactionsPromises).then(
+            (results) => {
+              results.forEach((value) => {
+                value.status === 'fulfilled'
+                  ? (amountOfTrxReprocessedOk += 1)
+                  : (amountOfTrxReprocessedWithError += 1);
+              });
+              return {
+                amountOfTrxReprocessedOk,
+                amountOfTrxReprocessedWithError
+              };
+            }
+          );
           this.logger.info(
             this.retry.name,
-            ' Reprocessing transaction ',
-            element
+            `Amount of transactions reprocessed successfuly: ${
+              counter?.amountOfTrxReprocessedOk || 0
+            } `
           );
-          transactionsPromises.push(this.reprocessTransaction(element));
-        });
-        counter = await Promise.allSettled(transactionsPromises).then(
-          (results) => {
-            results.forEach((value) => {
-              value.status === 'fulfilled'
-                ? (amountOfTrxReprocessedOk += 1)
-                : (amountOfTrxReprocessedWithError += 1);
-            });
-            return {
-              amountOfTrxReprocessedOk,
-              amountOfTrxReprocessedWithError
-            };
-          }
+          this.logger.info(
+            this.retry.name,
+            `Amount of transactions with error: ${
+              counter?.amountOfTrxReprocessedWithError || 0
+            } `
+          );
+        }
+        this.logger.info(
+          this.retry.name,
+          'No transactions where found in order to reprocess '
         );
+        await this.cacheManager.set(key, { allowedToReprocess: true });
       }
-      this.logger.info(
-        this.retry.name,
-        `Amount of transactions reprocessed successfuly: ${
-          counter?.amountOfTrxReprocessedOk || 0
-        } `
-      );
-      this.logger.info(
-        this.retry.name,
-        `Amount of transactions with error: ${
-          counter?.amountOfTrxReprocessedWithError || 0
-        } `
-      );
     } catch (error) {
+      await this.cacheManager.set(key, { allowedToReprocess: true });
       this.logger.error(this.retry.name, 'Error retrying transactions ', error);
       throw error;
     }
@@ -405,15 +434,21 @@ export class CreateTransactionService implements IService {
   };
 
   private handlerError = async (args: any): Promise<any> => {
-    const { request, error, typeCall, traceId, failCodes, businessName } = args;
+    const { request, error, typeCall, traceId, failCodesConfig, businessName } =
+      args;
     const timeoutCodes: string[] = this.configService.get<Array<string>>(
       'appConfig.timeoutCodes'
     );
     const timeSerieConfig: object = this.configService.get<object>(
       'appConfig.timeSerie'
     );
+    const numberOfRetry = 1;
     const statusCode: string =
       error.response?.status || error.response?.statusCode;
+    const config: ConfigurationDTO | undefined = await this.getConfiguration(
+      businessName
+    );
+    const failCodes: string[] = config?.getFailCodes() || failCodesConfig;
     const transactionLogRequest: TransactionLogDTO =
       TransactionLogMapper.transform(typeCall.request, request, traceId);
     const transactionLogResponse: TransactionLogDTO =
@@ -424,10 +459,9 @@ export class CreateTransactionService implements IService {
         error
       );
     if (allowedToRetry(statusCode, failCodes, error, timeoutCodes)) {
-      const timeSerie: object = await this.getTimeSerie(businessName);
       const seconds: number = this.buildSeconds(
-        timeSerie['1'],
-        1,
+        this.getTimeValueByType(config, numberOfRetry),
+        numberOfRetry,
         timeSerieConfig
       );
       const nextExecution = new Date(new Date().getTime() + seconds * 1000);
@@ -513,51 +547,47 @@ export class CreateTransactionService implements IService {
     };
   };
 
-  private getTimeSerie = async (businessName: string): Promise<object> => {
+  private getConfiguration = async (
+    businessName: string
+  ): Promise<ConfigurationDTO | undefined> => {
     try {
-      const configTimeSerie: object = this.configService.get<object>(
-        'appConfig.timeSerie'
-      );
       const country: string =
         this.configService.get<string>('appConfig.country');
-      const key = `${country}-${businessName}`;
-      const ttl: number = this.configService.get<number>(
-        'appConfig.expiration_minutes'
-      );
-      const cachedTimeSerie: object = await this.cacheManager.get(key);
-      if (!cachedTimeSerie) {
-        const configurationDB: object = await this.configurationService.get({
-          country,
-          enabled: true,
-          acquirer: businessName
-        });
-        const timeSerie: object =
-          (configurationDB && configurationDB[0]?.timeSerie) || configTimeSerie;
-        await this.cacheManager.set(key, timeSerie, ttl);
-        return timeSerie;
+      const key = generateKey({ country, businessName });
+      const cached: any = await this.cacheManager.get(key);
+      if (!cached) {
+        const configurationDB: ConfigurationDTO[] =
+          await this.retryPolicyService.get({
+            country,
+            enabled: true,
+            acquirer: businessName
+          });
+        await this.cacheManager.set(key, configurationDB[0]);
+        return configurationDB[0];
       }
       this.logger.info(
-        this.getTimeSerie.name,
+        this.getConfiguration.name,
         'configuration retrieved from cache ',
-        cachedTimeSerie
+        cached
       );
-      return cachedTimeSerie;
+      return buildResponse(Constants.dtosDictionary['Configuration'], cached);
     } catch (error) {
       this.logger.error(
-        this.getTimeSerie.name,
+        this.getConfiguration.name,
         'an Error Ocurred while trying to get Configuration ',
         error
       );
       throw error;
     }
   };
+
   private buildSeconds = (
     secondsFromTimeSerie: number,
     numberOfRetry: number,
     timeSerieConfig: object
   ): number => {
     if (!secondsFromTimeSerie) {
-      secondsFromTimeSerie = timeSerieConfig[numberOfRetry];
+      secondsFromTimeSerie = timeSerieConfig[numberOfRetry] || 30;
     }
     return secondsFromTimeSerie;
   };
@@ -578,5 +608,33 @@ export class CreateTransactionService implements IService {
     } catch (error) {
       throw error;
     }
+  };
+
+  private getTimeValueByType = (
+    config: ConfigurationDTO,
+    retryNumber: number
+  ): number => {
+    if (config?.getTime()?.getType() === Constants.TYPE_DATA[1]) {
+      const timeValue: number = (config.getTime() as NonSerieDTO)
+        .getData()
+        .getTimePeriod();
+      return timeValue;
+    }
+    return (
+      config?.getTime()?.getData() && config.getTime().getData()[retryNumber]
+    );
+  };
+
+  private getRetriesMaximunByType = (config: ConfigurationDTO): number => {
+    if (config?.getTime()?.getType() === Constants.TYPE_DATA[1]) {
+      const timeValue: number = (config.getTime() as NonSerieDTO)
+        .getData()
+        .getRetries();
+      return timeValue;
+    }
+    return (
+      config?.getTime()?.getData() &&
+      Object.keys(config.getTime().getData()).length
+    );
   };
 }

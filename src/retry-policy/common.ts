@@ -1,6 +1,7 @@
 export type Configuration = {
   country?: string;
-  timeSerie?: object;
+  time?: object;
   enabled?: boolean;
   acquirer?: string;
+  failCodes?: Array<number>;
 };

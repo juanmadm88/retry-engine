@@ -5,7 +5,9 @@ import { MongoDBService } from '../database/mongodb-service/mongodb-service';
 import { TbkMallService } from '../tbk-mall/tbk-mall.service';
 import { ConfigService } from '@nestjs/config';
 import { throwError } from 'rxjs';
-import { ConfigurationService } from '../mongo-configuration/configuration.service';
+import { RetryPolicyService } from '../retry-policy/retry-policy.service';
+import { plainToInstance } from 'class-transformer';
+import { ConfigurationDTO } from '../retry-policy/dtos';
 jest.mock('@payments/common-logger', () => {
   const mockedLogger = {
     info: jest.fn(),
@@ -61,7 +63,7 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
             get: jest.fn()
           }
@@ -79,7 +81,7 @@ describe('CreateTransactionService', () => {
           return ['408', '500', '502'];
         }
         if (key === 'appConfig.timeSerie') {
-          return { 1: 60, 2: 60, 3: 60, 4: 60 };
+          return { 1: 60, 2: 60, 3: 60, 4: 60, 5: 60 };
         }
         if (key === 'appConfig.timeoutCodes') {
           return ['ESOCKETTIMEDOUT'];
@@ -127,7 +129,7 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
             get: jest.fn()
           }
@@ -167,7 +169,7 @@ describe('CreateTransactionService', () => {
           return ['408', '500', '502'];
         }
         if (key === 'appConfig.timeSerie') {
-          return { 1: 60, 2: 60, 3: 60, 4: 60 };
+          return { 1: 60, 2: 60, 3: 60, 4: 60, 6: 60 };
         }
         if (key === 'appConfig.timeoutCodes') {
           return ['ESOCKETTIMEDOUT'];
@@ -212,7 +214,7 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
             get: jest.fn()
           }
@@ -257,7 +259,7 @@ describe('CreateTransactionService', () => {
           return ['408', '500', '502'];
         }
         if (key === 'appConfig.timeSerie') {
-          return { 1: 60, 2: 60, 3: 60, 4: 60 };
+          return { 1: 60, 2: 60, 3: 60, 4: 60, 7: 60 };
         }
         if (key === 'appConfig.timeoutCodes') {
           return ['ESOCKETTIMEDOUT'];
@@ -302,7 +304,7 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
             get: jest.fn()
           }
@@ -344,7 +346,7 @@ describe('CreateTransactionService', () => {
           return ['408', '500', '502'];
         }
         if (key === 'appConfig.timeSerie') {
-          return { 1: 60, 2: 60, 3: 60, 4: 60 };
+          return { 1: 60, 2: 60, 3: 60, 4: 60, 8: 60 };
         }
         if (key === 'appConfig.timeoutCodes') {
           return ['ESOCKETTIMEDOUT'];
@@ -392,7 +394,7 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
             get: jest.fn()
           }
@@ -441,7 +443,7 @@ describe('CreateTransactionService', () => {
           return ['408', '500', '502'];
         }
         if (key === 'appConfig.timeSerie') {
-          return { 1: 60, 2: 60, 3: 60, 4: 60 };
+          return { 1: 60, 2: 60, 3: 60, 4: 60, 9: 60 };
         }
         if (key === 'appConfig.timeoutCodes') {
           return ['ESOCKETTIMEDOUT'];
@@ -482,9 +484,25 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
-            get: jest.fn()
+            get: jest.fn().mockImplementation(() => {
+              return [
+                plainToInstance(ConfigurationDTO, {
+                  country: 'pe',
+                  enabled: true,
+                  failCodes: [3, 5, 408],
+                  acquirer: 'interop',
+                  time: {
+                    type: 'serie',
+                    data: {
+                      '1': '300',
+                      '2': '400'
+                    }
+                  }
+                })
+              ];
+            })
           }
         }
       ]
@@ -534,7 +552,7 @@ describe('CreateTransactionService', () => {
           return ['408', '500', '502'];
         }
         if (key === 'appConfig.timeSerie') {
-          return { 1: 60, 2: 60, 3: 60, 4: 60 };
+          return { 2: 60, 3: 60, 4: 60, 10: 60 };
         }
         if (key === 'appConfig.timeoutCodes') {
           return ['ESOCKETTIMEDOUT'];
@@ -565,19 +583,17 @@ describe('CreateTransactionService', () => {
           provide: 'CACHE_MANAGER',
           useValue: {
             get: jest.fn().mockImplementation(() => {
-              return [
-                {
-                  '1': '100'
-                }
-              ];
+              return undefined;
             }),
             set: jest.fn()
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
-            get: jest.fn()
+            get: jest.fn().mockImplementation(() => {
+              return [];
+            })
           }
         }
       ]
@@ -622,7 +638,7 @@ describe('CreateTransactionService', () => {
           return ['408', '500', '502'];
         }
         if (key === 'appConfig.timeSerie') {
-          return { 1: 60, 2: 60, 3: 60, 4: 60 };
+          return { 1: 60, 2: 60, 3: 60, 4: 60, 11: 60 };
         }
         if (key === 'appConfig.timeoutCodes') {
           return ['ESOCKETTIMEDOUT'];
@@ -670,7 +686,7 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
             get: jest.fn()
           }
@@ -706,6 +722,19 @@ describe('CreateTransactionService', () => {
     expect(spy).toBeCalled();
   });
   it('expect an error when getTokenByReconciliationId is called', async () => {
+    const mockedConfigService = {
+      get: jest.fn((key: string) => {
+        if (key === 'appConfig.failCodes') {
+          return ['408', '502'];
+        }
+        if (key === 'appConfig.timeSerie') {
+          return { 1: 60, 2: 60, 3: 60, 4: 60, 12: 60 };
+        }
+        if (key === 'appConfig.timeoutCodes') {
+          return ['ESOCKETTIMEDOUT'];
+        }
+      })
+    };
     const proxyServiceMocked = {
       doRequest: jest.fn().mockImplementationOnce(() =>
         Promise.resolve({
@@ -733,7 +762,7 @@ describe('CreateTransactionService', () => {
         { provide: ProxyService, useValue: proxyServiceMocked },
         { provide: MongoDBService, useValue: mongoDBService },
         { provide: TbkMallService, useValue: tbkMallServiceMocked },
-        ConfigService,
+        { provide: ConfigService, useValue: mockedConfigService },
         {
           provide: 'RABBIT_PRODUCER',
           useValue: {
@@ -748,9 +777,11 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
-            get: jest.fn()
+            get: jest.fn().mockImplementation(() => {
+              return [];
+            })
           }
         }
       ]
@@ -866,7 +897,7 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
             get: jest.fn()
           }
@@ -922,7 +953,7 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
             get: jest.fn()
           }
@@ -1021,7 +1052,7 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
             get: jest.fn()
           }
@@ -1119,7 +1150,7 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
             get: jest.fn()
           }
@@ -1218,10 +1249,25 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
             get: jest.fn().mockImplementation(() => {
-              return [];
+              return [
+                plainToInstance(ConfigurationDTO, {
+                  country: 'pe',
+                  enabled: true,
+                  failCodes: [3, 5, 408],
+                  acquirer: 'interop',
+                  time: {
+                    type: 'serie',
+                    data: {
+                      '1': '300',
+                      '2': '400',
+                      '3': '400'
+                    }
+                  }
+                })
+              ];
             })
           }
         }
@@ -1278,7 +1324,7 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
             get: jest.fn()
           }
@@ -1352,7 +1398,7 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
             get: jest.fn()
           }
@@ -1444,7 +1490,7 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
             get: jest.fn()
           }
@@ -1482,7 +1528,7 @@ describe('CreateTransactionService', () => {
       expect(spy).toBeCalled();
     }
   });
-  it('expect configurationService to be called', async () => {
+  it('expect retryPolicyService to be called', async () => {
     const proxyServiceMocked = {
       doRequest: jest.fn().mockImplementationOnce(() =>
         Promise.reject({
@@ -1509,9 +1555,9 @@ describe('CreateTransactionService', () => {
         }
       })
     };
-    const mockedConfigurationService = {
+    const mockedRetryPolicyService = {
       get: jest.fn().mockImplementation(() => {
-        return [{ timeSerie: { '1': '400' } }];
+        return [];
       })
     };
     const mongoDBService = {
@@ -1542,8 +1588,8 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
-          useValue: mockedConfigurationService
+          provide: RetryPolicyService,
+          useValue: mockedRetryPolicyService
         }
       ]
     }).compile();
@@ -1570,7 +1616,7 @@ describe('CreateTransactionService', () => {
         }
       }
     };
-    const spy = jest.spyOn(mockedConfigurationService, 'get');
+    const spy = jest.spyOn(mockedRetryPolicyService, 'get');
     try {
       await service.create(request);
     } catch (error) {
@@ -1663,7 +1709,7 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
             get: jest.fn().mockImplementation(() => {
               return [];
@@ -1727,7 +1773,7 @@ describe('CreateTransactionService', () => {
           }
         },
         {
-          provide: ConfigurationService,
+          provide: RetryPolicyService,
           useValue: {
             get: jest.fn()
           }
@@ -1766,5 +1812,452 @@ describe('CreateTransactionService', () => {
       expect(spyHandlerError).toBeCalled();
       expect(spyMongoService).not.toBeCalled();
     }
+  });
+  it('expect saveData being called when mongodb service returns an object ', async () => {
+    const proxyServiceMocked = {
+      doRequest: jest
+        .fn()
+        .mockImplementationOnce(() =>
+          Promise.reject({ code: 'ESOCKETTIMEDOUT' })
+        )
+    };
+    const mockedConfigService = {
+      get: jest.fn((key: string) => {
+        if (key === 'appConfig.failCodes') {
+          return ['408', '500', '502'];
+        }
+        if (key === 'appConfig.timeSerie') {
+          return { 1: 60, 2: 60, 3: 60, 4: 60 };
+        }
+        if (key === 'appConfig.timeoutCodes') {
+          return ['ESOCKETTIMEDOUT'];
+        }
+      })
+    };
+    const mongoDBService = {
+      saveData: jest.fn().mockImplementationOnce(() =>
+        Promise.resolve({
+          data: {}
+        })
+      )
+    };
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        CreateTransactionService,
+        { provide: ProxyService, useValue: proxyServiceMocked },
+        { provide: MongoDBService, useValue: mongoDBService },
+        { provide: TbkMallService, useValue: tbkMallServiceMocked },
+        { provide: ConfigService, useValue: mockedConfigService },
+        {
+          provide: 'RABBIT_PRODUCER',
+          useValue: {
+            send: jest.fn()
+          }
+        },
+        {
+          provide: 'CACHE_MANAGER',
+          useValue: {
+            get: jest.fn().mockImplementation(() => {
+              return {
+                country: 'pe',
+                enabled: true,
+                failCodes: [3, 5, 408],
+                acquirer: 'interop',
+                time: {
+                  type: 'nonserie',
+                  data: {
+                    retries: 100,
+                    timePeriod: 200
+                  }
+                }
+              };
+            }),
+            set: jest.fn()
+          }
+        },
+        {
+          provide: RetryPolicyService,
+          useValue: {
+            get: jest.fn()
+          }
+        }
+      ]
+    }).compile();
+    const service: CreateTransactionService =
+      module.get<CreateTransactionService>(CreateTransactionService);
+    const request: any = {
+      headers: {
+        'x-flow-timeout': 5000
+      },
+      options: {
+        body: {
+          metadata: {
+            transaction: {
+              business: {
+                name: 'transbank'
+              },
+              reconciliation_id: '34563'
+            }
+          },
+          transaction_type: 'SALE',
+          transaction: {
+            unique_id: '123423'
+          }
+        }
+      }
+    };
+    const spyHandlerError = jest.spyOn(service as any, 'handlerError');
+    const spyMongoService = jest.spyOn(mongoDBService, 'saveData');
+    try {
+      await service.create(request);
+    } catch (error) {
+      expect(error).toBeDefined();
+      expect(spyHandlerError).toBeCalled();
+      expect(spyMongoService).toBeCalled();
+    }
+  });
+  it('expect getTimeValueByType to be called after calling handlerError method ', async () => {
+    const proxyServiceMocked = {
+      doRequest: jest
+        .fn()
+        .mockImplementationOnce(() =>
+          Promise.reject({ code: 'ESOCKETTIMEDOUT' })
+        )
+    };
+    const mockedConfigService = {
+      get: jest.fn((key: string) => {
+        if (key === 'appConfig.failCodes') {
+          return ['408', '500', '502'];
+        }
+        if (key === 'appConfig.timeSerie') {
+          return { 1: 60, 2: 60, 3: 60, 4: 60 };
+        }
+        if (key === 'appConfig.timeoutCodes') {
+          return ['ESOCKETTIMEDOUT'];
+        }
+      })
+    };
+    const mongoDBService = {
+      saveData: jest.fn().mockImplementationOnce(() =>
+        Promise.resolve({
+          data: {}
+        })
+      )
+    };
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        CreateTransactionService,
+        { provide: ProxyService, useValue: proxyServiceMocked },
+        { provide: MongoDBService, useValue: mongoDBService },
+        { provide: TbkMallService, useValue: tbkMallServiceMocked },
+        { provide: ConfigService, useValue: mockedConfigService },
+        {
+          provide: 'RABBIT_PRODUCER',
+          useValue: {
+            send: jest.fn()
+          }
+        },
+        {
+          provide: 'CACHE_MANAGER',
+          useValue: {
+            get: jest.fn().mockImplementation(() => {
+              return {
+                country: 'pe',
+                enabled: true,
+                failCodes: [3, 5, 408],
+                acquirer: 'interop',
+                time: {
+                  type: 'serie',
+                  data: {
+                    '1': '300',
+                    '2': '300'
+                  }
+                }
+              };
+            }),
+            set: jest.fn()
+          }
+        },
+        {
+          provide: RetryPolicyService,
+          useValue: {
+            get: jest.fn()
+          }
+        }
+      ]
+    }).compile();
+    const service: CreateTransactionService =
+      module.get<CreateTransactionService>(CreateTransactionService);
+    const request: any = {
+      headers: {
+        'x-flow-timeout': 5000
+      },
+      options: {
+        body: {
+          metadata: {
+            transaction: {
+              business: {
+                name: 'transbank'
+              },
+              reconciliation_id: '34563'
+            }
+          },
+          transaction_type: 'SALE',
+          transaction: {
+            unique_id: '123423'
+          }
+        }
+      }
+    };
+    const spyHandlerError = jest.spyOn(service as any, 'handlerError');
+    const spyGetTimeValueByType = jest.spyOn(
+      service as any,
+      'getTimeValueByType'
+    );
+    const spyMongoService = jest.spyOn(mongoDBService, 'saveData');
+    try {
+      await service.create(request);
+    } catch (error) {
+      expect(error).toBeDefined();
+      expect(spyHandlerError).toBeCalled();
+      expect(spyMongoService).toBeCalled();
+      expect(spyGetTimeValueByType).toBeCalled();
+    }
+  });
+  it('expect  buildSeconds to be called after failing and allowing to retry transaction ', async () => {
+    const proxyServiceMocked = {
+      doRequest: jest
+        .fn()
+        .mockImplementationOnce(() =>
+          Promise.reject({ code: 'ESOCKETTIMEDOUT' })
+        )
+        .mockImplementationOnce(() =>
+          Promise.reject({ response: { statusCode: 409 } })
+        )
+    };
+    const mockedConfigService = {
+      get: jest.fn((key: string) => {
+        if (key === 'appConfig.failCodes') {
+          return ['408', '500', '502'];
+        }
+        if (key === 'appConfig.timeSerie') {
+          return { 1: 60, 2: 60, 3: 60, 4: 60 };
+        }
+        if (key === 'appConfig.timeoutCodes') {
+          return ['ESOCKETTIMEDOUT'];
+        }
+      })
+    };
+    const record = {
+      trace_id: '1234',
+      created_at: new Date(),
+      getId: jest.fn(),
+      getTrsUniqueId: jest.fn(),
+      getData: jest.fn().mockImplementation(() => {
+        return {
+          options: {
+            body: {
+              metadata: {
+                transaction: {
+                  business: {
+                    name: 'tbk'
+                  },
+                  reconciliation_id: '34563'
+                }
+              },
+              transaction_type: 'SALE',
+              transaction: {
+                unique_id: '123423'
+              }
+            },
+            headers: {
+              'x-flow-timeout': 5000
+            }
+          }
+        };
+      }),
+      getTraceId: jest.fn(),
+      getCreatedAt: jest.fn(),
+      getRetries: jest.fn().mockImplementation(() => {
+        return 1;
+      }),
+      getNextExecution: jest.fn(),
+      _id: '68695'
+    };
+    const mongoDBService = {
+      getData: jest
+        .fn()
+        .mockImplementationOnce(() => Promise.resolve([record, record])),
+      updateData: jest.fn(),
+      saveData: jest.fn()
+    };
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        CreateTransactionService,
+        { provide: ProxyService, useValue: proxyServiceMocked },
+        { provide: MongoDBService, useValue: mongoDBService },
+        { provide: TbkMallService, useValue: tbkMallServiceMocked },
+        { provide: ConfigService, useValue: mockedConfigService },
+        {
+          provide: 'RABBIT_PRODUCER',
+          useValue: {
+            send: jest.fn()
+          }
+        },
+        {
+          provide: 'CACHE_MANAGER',
+          useValue: {
+            get: jest.fn(),
+            set: jest.fn()
+          }
+        },
+        {
+          provide: RetryPolicyService,
+          useValue: {
+            get: jest.fn().mockImplementation(() => {
+              return [
+                plainToInstance(ConfigurationDTO, {
+                  country: 'pe',
+                  enabled: true,
+                  failCodes: [3, 5, 408],
+                  acquirer: 'interop',
+                  time: {
+                    type: 'nonserie',
+                    data: {
+                      retries: 30,
+                      timePeriod: 60
+                    }
+                  }
+                })
+              ];
+            })
+          }
+        }
+      ]
+    }).compile();
+    const service: CreateTransactionService =
+      module.get<CreateTransactionService>(CreateTransactionService);
+    const spy = jest.spyOn(service as any, 'buildSeconds');
+    await service.retry();
+    expect(spy).toBeCalled();
+  });
+  it('expected get data being called when redis service returned to be reprocessed equals true', async () => {
+    const proxyServiceMocked = {
+      doRequest: jest
+        .fn()
+        .mockImplementationOnce(() =>
+          Promise.reject({ code: 'ESOCKETTIMEDOUT' })
+        )
+        .mockImplementationOnce(() =>
+          Promise.reject({ response: { statusCode: 409 } })
+        )
+    };
+    const mockedConfigService = {
+      get: jest.fn((key: string) => {
+        if (key === 'appConfig.failCodes') {
+          return ['408', '500', '502'];
+        }
+        if (key === 'appConfig.timeSerie') {
+          return { 1: 60, 2: 60, 3: 60, 4: 60 };
+        }
+        if (key === 'appConfig.timeoutCodes') {
+          return ['ESOCKETTIMEDOUT'];
+        }
+      })
+    };
+    const record = {
+      trace_id: '1234',
+      created_at: new Date(),
+      getId: jest.fn(),
+      getTrsUniqueId: jest.fn(),
+      getData: jest.fn().mockImplementation(() => {
+        return {
+          options: {
+            body: {
+              metadata: {
+                transaction: {
+                  business: {
+                    name: 'tbk'
+                  },
+                  reconciliation_id: '34563'
+                }
+              },
+              transaction_type: 'SALE',
+              transaction: {
+                unique_id: '123423'
+              }
+            },
+            headers: {
+              'x-flow-timeout': 5000
+            }
+          }
+        };
+      }),
+      getTraceId: jest.fn(),
+      getCreatedAt: jest.fn(),
+      getRetries: jest.fn().mockImplementation(() => {
+        return 1;
+      }),
+      getNextExecution: jest.fn(),
+      _id: '68695'
+    };
+    const mongoDBService = {
+      getData: jest
+        .fn()
+        .mockImplementationOnce(() => Promise.resolve([record, record])),
+      updateData: jest.fn(),
+      saveData: jest.fn()
+    };
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        CreateTransactionService,
+        { provide: ProxyService, useValue: proxyServiceMocked },
+        { provide: MongoDBService, useValue: mongoDBService },
+        { provide: TbkMallService, useValue: tbkMallServiceMocked },
+        { provide: ConfigService, useValue: mockedConfigService },
+        {
+          provide: 'RABBIT_PRODUCER',
+          useValue: {
+            send: jest.fn()
+          }
+        },
+        {
+          provide: 'CACHE_MANAGER',
+          useValue: {
+            get: jest.fn().mockImplementation(() => {
+              return { allowedToReprocess: true };
+            }),
+            set: jest.fn()
+          }
+        },
+        {
+          provide: RetryPolicyService,
+          useValue: {
+            get: jest.fn().mockImplementation(() => {
+              return [
+                plainToInstance(ConfigurationDTO, {
+                  country: 'pe',
+                  enabled: true,
+                  failCodes: [3, 5, 408],
+                  acquirer: 'interop',
+                  time: {
+                    type: 'nonserie',
+                    data: {
+                      retries: 30,
+                      timePeriod: 60
+                    }
+                  }
+                })
+              ];
+            })
+          }
+        }
+      ]
+    }).compile();
+    const service: CreateTransactionService =
+      module.get<CreateTransactionService>(CreateTransactionService);
+    const spy = jest.spyOn(mongoDBService as any, 'getData');
+    await service.retry();
+    expect(spy).toBeCalled();
   });
 });

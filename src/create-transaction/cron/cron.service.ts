@@ -2,8 +2,8 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
-import { ILogger, LoggerService } from '../logger/logger.service';
-import { CreateTransactionService } from '../create-transaction/create-transaction.service';
+import { ILogger, LoggerService } from '../../logger/logger.service';
+import { CreateTransactionService } from '../../create-transaction/create-transaction.service';
 
 @Injectable()
 export class CronService implements OnModuleInit {

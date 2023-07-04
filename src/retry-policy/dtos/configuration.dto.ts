@@ -1,33 +1,47 @@
 import {
   IsBoolean,
-  IsObject,
   IsString,
   IsOptional,
   IsNotEmpty,
-  IsNotEmptyObject,
-  IsEnum
+  IsEnum,
+  ValidateNested,
+  IsNumber,
+  ArrayNotEmpty
 } from 'class-validator';
 import { Constants } from '../../constants';
+import { TimeDTO } from './time.dto';
+import { Expose, Transform, Type } from 'class-transformer';
+import { NonSerieDTO } from './non-serie.dto';
+import { SerieDTO } from './serie.dto';
 /* istanbul ignore file */
 
 export class ConfigurationDTO {
   constructor(args: any) {
     if (args) {
-      const { timeSerie, enabled, country, _id, created_at, acquirer } = args;
-      if (timeSerie) this.timeSerie = timeSerie;
+      const { time, enabled, country, _id, created_at, acquirer, failCodes } =
+        args;
+      if (time) this.time = time;
       if ('enabled' in args) this.enabled = enabled;
       if (country) this.country = country;
       if (_id) this._id = _id;
       if (created_at) this.created_at = created_at;
       if (acquirer) this.acquirer = acquirer;
+      if (failCodes) this.failCodes = failCodes;
     }
   }
 
   @IsNotEmpty()
   @IsString()
+  @Expose()
   private country: string;
 
+  @ArrayNotEmpty()
+  @Expose()
+  @IsNumber({}, { each: true })
+  private failCodes: Array<number>;
+
   @IsNotEmpty()
+  @Expose()
   @IsString()
   @IsEnum(Object.keys(Constants.typesCall), {
     message: `acquirer must have  one of these valid values: [${Object.keys(
@@ -38,23 +52,40 @@ export class ConfigurationDTO {
 
   @IsOptional()
   @IsBoolean()
+  @Expose()
   private enabled?: boolean;
 
-  @IsNotEmptyObject()
-  @IsObject()
-  private timeSerie: object;
+  @IsNotEmpty()
+  @ValidateNested()
+  @Expose()
+  @Type(() => TimeDTO, {
+    discriminator: {
+      property: 'type',
+      subTypes: [
+        {
+          value: NonSerieDTO,
+          name: Constants.TYPE_DATA[1] as unknown as string
+        },
+        { value: SerieDTO, name: Constants.TYPE_DATA[0] as unknown as string }
+      ]
+    },
+    keepDiscriminatorProperty: true
+  })
+  time: NonSerieDTO | SerieDTO;
 
   @IsOptional()
+  @Expose()
+  @Transform((value) => value.obj._id?.toString())
   private _id?: any;
 
   @IsOptional()
   private created_at?: any;
 
-  public getTimeSerie(): object {
-    return this.timeSerie;
+  public getTime(): NonSerieDTO | SerieDTO {
+    return this.time;
   }
-  public setTimeSerie(value: object) {
-    this.timeSerie = value;
+  public setTime(value: NonSerieDTO | SerieDTO) {
+    this.time = value;
   }
 
   public getEnabled(): boolean {
@@ -90,5 +121,12 @@ export class ConfigurationDTO {
   }
   public setAcquirer(value: string) {
     this.acquirer = value;
+  }
+
+  public getFailCodes(): Array<number> {
+    return this.failCodes;
+  }
+  public setFailCodes(value: Array<number>) {
+    this.failCodes = value;
   }
 }

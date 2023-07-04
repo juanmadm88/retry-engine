@@ -1,14 +1,14 @@
 import { BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CheckCountryMiddleware } from './check.country.middleware';
+import { CheckCountryInterceptor } from './check.country.interceptor';
 
-let middleware: CheckCountryMiddleware;
+let interceptor: CheckCountryInterceptor;
 
 beforeEach(async () => {
   const module: TestingModule = await Test.createTestingModule({
     providers: [
-      CheckCountryMiddleware,
+      CheckCountryInterceptor,
       {
         provide: ConfigService,
         useValue: {
@@ -22,7 +22,7 @@ beforeEach(async () => {
     ]
   }).compile();
 
-  middleware = module.get<CheckCountryMiddleware>(CheckCountryMiddleware);
+  interceptor = module.get<CheckCountryInterceptor>(CheckCountryInterceptor);
 });
 
 const executionContext = {
@@ -41,11 +41,11 @@ const callHandler = {
   handle: jest.fn()
 };
 
-describe('CheckCountryMiddleware ', () => {
+describe('CheckCountryInterceptor ', () => {
   it('should be defined', () => {
-    expect(middleware).toBeDefined();
+    expect(interceptor).toBeDefined();
   });
-  describe('CheckCountryMiddleware ', () => {
+  describe('CheckCountryInterceptor ', () => {
     it('should call next when header is correct ', async () => {
       (
         executionContext.switchToHttp().getRequest as jest.Mock<any, any>
@@ -54,7 +54,7 @@ describe('CheckCountryMiddleware ', () => {
         body: { data: 'mocked data' }
       });
       callHandler.handle.mockResolvedValueOnce('next handle');
-      const actualValue = await middleware.intercept(
+      const actualValue = await interceptor.intercept(
         executionContext,
         callHandler
       );
@@ -71,7 +71,7 @@ describe('CheckCountryMiddleware ', () => {
       });
       callHandler.handle.mockResolvedValueOnce('next handle');
       try {
-        middleware.intercept(executionContext, callHandler);
+        interceptor.intercept(executionContext, callHandler);
       } catch (e) {
         expect(e).toBeDefined();
         expect(e).toEqual(new BadRequestException('The country is mandatory'));
@@ -86,7 +86,7 @@ describe('CheckCountryMiddleware ', () => {
       });
       callHandler.handle.mockResolvedValueOnce('next handle');
       try {
-        middleware.intercept(executionContext, callHandler);
+        interceptor.intercept(executionContext, callHandler);
       } catch (e) {
         expect(e).toBeDefined();
         expect(e).toEqual(new BadRequestException('The country is mandatory'));
@@ -102,7 +102,7 @@ describe('CheckCountryMiddleware ', () => {
       });
       callHandler.handle.mockResolvedValueOnce('next handle');
       try {
-        middleware.intercept(executionContext, callHandler);
+        interceptor.intercept(executionContext, callHandler);
       } catch (e) {
         expect(e).toBeDefined();
         expect(e).toEqual(

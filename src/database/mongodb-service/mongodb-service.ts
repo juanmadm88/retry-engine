@@ -41,10 +41,6 @@ export class MongoDBService {
         'appConfig.numberOfTrxToProcess'
       );
       const response = await model.find(filter).limit(size);
-      this.logger.info(
-        this.saveData.name,
-        `Data retrieved successfully ${JSON.stringify(response)}`
-      );
       const transactionLogDTOs: Array<any> = response
         ? response.map((element) => {
             return buildResponse(
@@ -53,6 +49,12 @@ export class MongoDBService {
             );
           })
         : [];
+      if (response?.length > 0) {
+        this.logger.info(
+          this.saveData.name,
+          `Data retrieved successfully ${JSON.stringify(response)}`
+        );
+      }
       return transactionLogDTOs;
     } catch (error) {
       this.logger.error(this.saveData.name, 'Error retrieving data ', error);

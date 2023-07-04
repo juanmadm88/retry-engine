@@ -1,4 +1,4 @@
-import { ConfigurationService } from './configuration.service';
+import { RetryPolicyService } from './retry-policy.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongoDBService } from '../database/mongodb-service/mongodb-service';
 import { ConfigService } from '@nestjs/config';
@@ -28,13 +28,13 @@ jest.mock('@payments/common-logger', () => {
   };
 });
 
-describe('ConfigurationService ', () => {
-  let service: ConfigurationService;
+describe('RetryPolicyService ', () => {
+  let service: RetryPolicyService;
   it('should expect to be defined', async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [MongoDBService, ConfigService, ConfigurationService]
+      providers: [MongoDBService, ConfigService, RetryPolicyService]
     }).compile();
-    service = module.get<ConfigurationService>(ConfigurationService);
+    service = module.get<RetryPolicyService>(RetryPolicyService);
     expect(service).toBeDefined();
   });
   it('expect a succesfully response when calling getData method from mongoDbService ', async () => {
@@ -47,10 +47,10 @@ describe('ConfigurationService ', () => {
       providers: [
         { provide: MongoDBService, useValue: mockedDbService },
         ConfigService,
-        ConfigurationService
+        RetryPolicyService
       ]
     }).compile();
-    service = module.get<ConfigurationService>(ConfigurationService);
+    service = module.get<RetryPolicyService>(RetryPolicyService);
     const spy = jest.spyOn(mockedDbService, 'getData');
     await service.get({});
     expect(spy).toBeCalled();
@@ -58,7 +58,7 @@ describe('ConfigurationService ', () => {
   it('expect a succesfully response when calling saveData method from mongoDbService ', async () => {
     const body: ConfigurationDTO = new ConfigurationDTO({
       country: 'pe',
-      timeSerie: { '1': '100' }
+      time: { '1': '100' }
     });
     const mockedDbService = {
       saveData: jest.fn().mockImplementation(() => {
@@ -69,10 +69,10 @@ describe('ConfigurationService ', () => {
       providers: [
         { provide: MongoDBService, useValue: mockedDbService },
         ConfigService,
-        ConfigurationService
+        RetryPolicyService
       ]
     }).compile();
-    service = module.get<ConfigurationService>(ConfigurationService);
+    service = module.get<RetryPolicyService>(RetryPolicyService);
     const spy = jest.spyOn(mockedDbService, 'saveData');
     await service.create(body);
     expect(spy).toBeCalled();
@@ -80,7 +80,7 @@ describe('ConfigurationService ', () => {
   it('expect a succesfully response when calling updateData method from mongoDbService ', async () => {
     const body: ConfigurationDTO = new ConfigurationDTO({
       country: 'pe',
-      timeSerie: { '1': '100' }
+      time: { '1': '100' }
     });
     const mockedDbService = {
       updateData: jest.fn().mockImplementation(() => {
@@ -91,10 +91,10 @@ describe('ConfigurationService ', () => {
       providers: [
         { provide: MongoDBService, useValue: mockedDbService },
         ConfigService,
-        ConfigurationService
+        RetryPolicyService
       ]
     }).compile();
-    service = module.get<ConfigurationService>(ConfigurationService);
+    service = module.get<RetryPolicyService>(RetryPolicyService);
     const spy = jest.spyOn(mockedDbService, 'updateData');
     await service.update(body);
     expect(spy).toBeCalled();
@@ -102,7 +102,7 @@ describe('ConfigurationService ', () => {
   it('expect an Error  when calling updateData method from mongoDbService fails ', async () => {
     const body: ConfigurationDTO = new ConfigurationDTO({
       country: 'pe',
-      timeSerie: { '1': '100' }
+      time: { '1': '100' }
     });
     const mockedDbService = {
       updateData: jest.fn().mockImplementation(() => {
@@ -113,10 +113,10 @@ describe('ConfigurationService ', () => {
       providers: [
         { provide: MongoDBService, useValue: mockedDbService },
         ConfigService,
-        ConfigurationService
+        RetryPolicyService
       ]
     }).compile();
-    service = module.get<ConfigurationService>(ConfigurationService);
+    service = module.get<RetryPolicyService>(RetryPolicyService);
     const spy = jest.spyOn(mockedDbService, 'updateData');
     try {
       await service.update(body);
@@ -128,7 +128,7 @@ describe('ConfigurationService ', () => {
   it('expect an Error  when calling saveData method from mongoDbService fails ', async () => {
     const body: ConfigurationDTO = new ConfigurationDTO({
       country: 'pe',
-      timeSerie: { '1': '100' }
+      time: { '1': '100' }
     });
     const mockedDbService = {
       saveData: jest.fn().mockImplementation(() => {
@@ -139,10 +139,10 @@ describe('ConfigurationService ', () => {
       providers: [
         { provide: MongoDBService, useValue: mockedDbService },
         ConfigService,
-        ConfigurationService
+        RetryPolicyService
       ]
     }).compile();
-    service = module.get<ConfigurationService>(ConfigurationService);
+    service = module.get<RetryPolicyService>(RetryPolicyService);
     const spy = jest.spyOn(mockedDbService, 'saveData');
     try {
       await service.create(body);
@@ -161,10 +161,10 @@ describe('ConfigurationService ', () => {
       providers: [
         { provide: MongoDBService, useValue: mockedDbService },
         ConfigService,
-        ConfigurationService
+        RetryPolicyService
       ]
     }).compile();
-    service = module.get<ConfigurationService>(ConfigurationService);
+    service = module.get<RetryPolicyService>(RetryPolicyService);
     const spy = jest.spyOn(mockedDbService, 'getData');
     try {
       await service.get({});

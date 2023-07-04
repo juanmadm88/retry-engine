@@ -8,16 +8,16 @@ import {
   Query,
   UseInterceptors
 } from '@nestjs/common';
-import { ConfigurationService } from './configuration.service';
+import { RetryPolicyService } from './retry-policy.service';
 import { ConfigurationDTO } from './dtos';
-import { CheckCountryMiddleware } from './middlewares/check.country.middleware';
+import { CheckCountryInterceptor } from './interceptor/check.country.interceptor';
 import { Configuration } from './common';
 import { ConfigurationMapper } from './mapper/configuration.mapper';
 
-@UseInterceptors(CheckCountryMiddleware)
+@UseInterceptors(CheckCountryInterceptor)
 @Controller()
-export class ConfigurationController {
-  constructor(private readonly service: ConfigurationService) {}
+export class RetryPolicyController {
+  constructor(private readonly service: RetryPolicyService) {}
 
   @Post('/configuration')
   async create(@Body() dto: ConfigurationDTO): Promise<any> {

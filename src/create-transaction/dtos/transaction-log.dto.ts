@@ -1,3 +1,4 @@
+import { Expose, Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsNumber,
@@ -6,131 +7,152 @@ import {
   IsString
 } from 'class-validator';
 /* istanbul ignore file */
-import { Exclude } from 'class-transformer';
 
 export class TransactionLogDTO {
-  constructor(args: any = {}) {
-    const {
-      trs_unique_id,
-      status,
-      type_call,
-      trs_type,
-      trs_datetime,
-      payment_method,
-      trs_amount_total,
-      acquirer,
-      acquirer_unique_id,
-      response_code,
-      authorization_code,
-      data,
-      data_error,
-      custom_tracking_id,
-      trace_id,
-      next_execution,
-      to_be_reprocessed,
-      retries,
-      _id,
-      created_at
-    } = args;
-    if (trs_unique_id) this.trs_unique_id = trs_unique_id;
-    if (status) this.status = status;
-    if (type_call) this.type_call = type_call;
-    if (trs_type) this.trs_type = trs_type;
-    if (trs_datetime) this.trs_datetime = trs_datetime;
-    if (payment_method) this.payment_method = payment_method;
-    if (trs_amount_total) this.trs_amount_total = trs_amount_total;
-    if (acquirer) this.acquirer = acquirer;
-    if (acquirer_unique_id) this.acquirer_unique_id = acquirer_unique_id;
-    if (response_code) this.response_code = response_code;
-    if (authorization_code) this.authorization_code = authorization_code;
-    if (data) this.data = data;
-    if (data_error) this.data_error = data_error;
-    if (custom_tracking_id) this.custom_tracking_id = custom_tracking_id;
-    if (trace_id) this.trace_id = trace_id;
-    if (next_execution) this.next_execution = next_execution;
-    if (to_be_reprocessed) this.to_be_reprocessed = to_be_reprocessed;
-    if (retries) this.retries = retries;
-    if (_id) this._id = _id;
-    if (created_at) this.created_at = created_at;
+  constructor(args: any) {
+    if (args) {
+      const {
+        trs_unique_id,
+        status,
+        type_call,
+        trs_type,
+        trs_datetime,
+        payment_method,
+        trs_amount_total,
+        acquirer,
+        acquirer_unique_id,
+        response_code,
+        authorization_code,
+        data,
+        data_error,
+        custom_tracking_id,
+        trace_id,
+        next_execution,
+        to_be_reprocessed,
+        retries,
+        _id,
+        created_at
+      } = args;
+      if (trs_unique_id) this.trs_unique_id = trs_unique_id;
+      if (status) this.status = status;
+      if (type_call) this.type_call = type_call;
+      if (trs_type) this.trs_type = trs_type;
+      if (trs_datetime) this.trs_datetime = trs_datetime;
+      if (payment_method) this.payment_method = payment_method;
+      if (trs_amount_total) this.trs_amount_total = trs_amount_total;
+      if (acquirer) this.acquirer = acquirer;
+      if (acquirer_unique_id) this.acquirer_unique_id = acquirer_unique_id;
+      if (response_code) this.response_code = response_code;
+      if (authorization_code) this.authorization_code = authorization_code;
+      if (data) this.data = data;
+      if (data_error) this.data_error = data_error;
+      if (custom_tracking_id) this.custom_tracking_id = custom_tracking_id;
+      if (trace_id) this.trace_id = trace_id;
+      if (next_execution) this.next_execution = next_execution;
+      if (to_be_reprocessed) this.to_be_reprocessed = to_be_reprocessed;
+      if (retries) this.retries = retries;
+      if (_id) this._id = _id;
+      if (created_at) this.created_at = created_at;
+    }
   }
 
   @IsOptional()
   @IsString()
-  @Exclude()
+  @Expose()
   private trs_unique_id?: string;
 
   @IsOptional()
   @IsString()
+  @Expose()
   private status?: string;
 
   @IsOptional()
   @IsString()
+  @Expose()
   private type_call?: string;
 
   @IsOptional()
   @IsString()
+  @Expose()
   private trs_type?: string;
 
   @IsOptional()
   @IsString()
+  @Expose()
   private trs_datetime?: string;
 
   @IsOptional()
   @IsString()
+  @Expose()
   private payment_method?: string;
 
   @IsOptional()
   @IsNumber()
+  @Expose()
   private trs_amount_total?: number;
 
   @IsOptional()
   @IsString()
+  @Expose()
   private acquirer?: string;
 
   @IsOptional()
   @IsString()
+  @Expose()
   private acquirer_unique_id?: string;
 
   @IsOptional()
   @IsString()
+  @Expose()
   private response_code?: string;
 
   @IsOptional()
   @IsString()
+  @Expose()
   private authorization_code?: string;
 
   @IsOptional()
   @IsObject()
+  @Expose()
   private data?: object;
 
   @IsOptional()
   @IsObject()
+  @Expose()
   private data_error?: object;
 
   @IsOptional()
   @IsString()
+  @Expose()
   private custom_tracking_id?: string;
 
   @IsOptional()
   @IsString()
+  @Expose()
   private trace_id: string;
 
   @IsOptional()
   @IsBoolean()
+  @Expose()
   private to_be_reprocessed: boolean;
 
   @IsOptional()
   @IsString()
+  @Expose()
   private next_execution: string;
 
   @IsOptional()
   @IsNumber()
+  @Expose()
   private retries: number;
 
   @IsOptional()
+  @Expose()
+  @Transform((value) => value.obj._id?.toString())
   private _id: any;
 
   @IsOptional()
+  @Expose()
   private created_at: any;
 
   public getTrsUniqueId(): string {

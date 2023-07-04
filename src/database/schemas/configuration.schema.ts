@@ -14,8 +14,11 @@ export class Configuration {
   @Prop({ type: Boolean, default: true })
   enabled: boolean;
 
+  @Prop({ type: Array<number>, required: true })
+  failCodes: Array<number>;
+
   @Prop({ type: Object, required: true })
-  timeSerie: any;
+  time: object;
 
   @Prop({
     type: String,

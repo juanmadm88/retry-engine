@@ -1,3 +1,4 @@
+import { Expose } from 'class-transformer';
 import { IsObject, IsOptional, IsString } from 'class-validator';
 /* istanbul ignore file */
 
@@ -19,22 +20,27 @@ export class ResponseDTO {
 
   @IsOptional()
   @IsString()
+  @Expose()
   private transaction_type?: string;
 
   @IsOptional()
   @IsString()
+  @Expose()
   private payment_method?: string;
 
   @IsOptional()
   @IsString()
+  @Expose()
   private response_code: string;
 
   @IsOptional()
   @IsString()
+  @Expose()
   private response_description?: string;
 
   @IsOptional()
   @IsObject()
+  @Expose()
   private transaction?: object;
 
   public getTransactionType(): string {

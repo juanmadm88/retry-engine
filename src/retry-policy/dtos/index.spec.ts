@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { ConfigurationDTO } from './index';
 
 describe('Index ', () => {

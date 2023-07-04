@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { Observable } from 'rxjs';
 
 @Injectable()
-export class CheckCountryMiddleware implements NestInterceptor {
+export class CheckCountryInterceptor implements NestInterceptor {
   constructor(private configService: ConfigService) {}
   intercept(
     context: ExecutionContext,

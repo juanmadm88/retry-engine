@@ -8,7 +8,7 @@ import {
 } from '../database/schemas/configuration.schema';
 import { ConfigurationDTO } from './dtos';
 @Injectable()
-export class ConfigurationService {
+export class RetryPolicyService {
   private logger: LoggerService;
   private createMethodName: string;
   constructor(private readonly mongoDBService: MongoDBService) {

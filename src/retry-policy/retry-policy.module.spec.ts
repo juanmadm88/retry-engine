@@ -1,8 +1,8 @@
-import { ConfigurationModule } from './configuration.module';
+import { RetryPolicyModule } from './retry-policy.module';
 
 describe('ConfigurationModule', () => {
   it('expect successfully created module', async () => {
-    const module = new ConfigurationModule();
+    const module = new RetryPolicyModule();
     expect(module).toBeDefined();
   });
 });

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigurationController } from './configuration.controller';
+import { RetryPolicyController } from './retry-policy.controller';
 import { MongoDBService } from '../database/mongodb-service/mongodb-service';
-import { ConfigurationService } from './configuration.service';
+import { RetryPolicyService } from './retry-policy.service';
 import { ConfigService } from '@nestjs/config';
 import { ConfigurationDTO } from './dtos';
 
@@ -29,14 +29,14 @@ jest.mock('@payments/common-logger', () => {
   };
 });
 
-describe('ConfigurationController', () => {
-  let controller: ConfigurationController;
+describe('RetryPolicyController', () => {
+  let controller: RetryPolicyController;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [ConfigurationController],
-      providers: [MongoDBService, ConfigurationService, ConfigService]
+      controllers: [RetryPolicyController],
+      providers: [MongoDBService, RetryPolicyService, ConfigService]
     }).compile();
-    controller = module.get<ConfigurationController>(ConfigurationController);
+    controller = module.get<RetryPolicyController>(RetryPolicyController);
   });
   afterEach(() => {
     jest.clearAllMocks();
@@ -47,53 +47,57 @@ describe('ConfigurationController', () => {
   it('expect sufesfully resolve when calling create method ', async () => {
     const body: ConfigurationDTO = new ConfigurationDTO({
       country: 'pe',
-      timeSerie: { '1': '100' }
+      time: { '1': '100' },
+      failCodes: [1, 2]
     });
-    const configurationService = {
+    const retryPolicyService = {
       create: jest
         .fn()
         .mockImplementationOnce(() => Promise.resolve({ status: 201 }))
     };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        ConfigurationController,
+        RetryPolicyController,
         ConfigService,
         {
-          provide: ConfigurationService,
-          useValue: configurationService
+          provide: RetryPolicyService,
+          useValue: retryPolicyService
         }
       ]
     }).compile();
-    const spy = jest.spyOn(configurationService, 'create');
-    const controller: ConfigurationController =
-      module.get<ConfigurationController>(ConfigurationController);
+    const spy = jest.spyOn(retryPolicyService, 'create');
+    const controller: RetryPolicyController = module.get<RetryPolicyController>(
+      RetryPolicyController
+    );
     await controller.create(body);
     expect(spy).toBeCalled();
   });
   it('expect sufesfully resolve when calling update method ', async () => {
     const body: ConfigurationDTO = new ConfigurationDTO({
       country: 'pe',
-      timeSerie: { '1': '100' }
+      time: { '1': '100' },
+      failCodes: [1, 2]
     });
-    const configurationService = {
+    const retryPolicyService = {
       update: jest
         .fn()
         .mockImplementationOnce(() => Promise.resolve({ status: 201 }))
     };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        ConfigurationController,
+        RetryPolicyController,
         ConfigService,
         {
-          provide: ConfigurationService,
-          useValue: configurationService
+          provide: RetryPolicyService,
+          useValue: retryPolicyService
         }
       ]
     }).compile();
     const id = '1234';
-    const spy = jest.spyOn(configurationService, 'update');
-    const controller: ConfigurationController =
-      module.get<ConfigurationController>(ConfigurationController);
+    const spy = jest.spyOn(retryPolicyService, 'update');
+    const controller: RetryPolicyController = module.get<RetryPolicyController>(
+      RetryPolicyController
+    );
     await controller.update(body, id);
     expect(spy).toBeCalled();
   });
@@ -101,24 +105,25 @@ describe('ConfigurationController', () => {
     const query: any = {
       country: 'pe'
     };
-    const configurationService = {
+    const retryPolicyService = {
       get: jest
         .fn()
         .mockImplementationOnce(() => Promise.resolve({ status: 201 }))
     };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        ConfigurationController,
+        RetryPolicyController,
         ConfigService,
         {
-          provide: ConfigurationService,
-          useValue: configurationService
+          provide: RetryPolicyService,
+          useValue: retryPolicyService
         }
       ]
     }).compile();
-    const spy = jest.spyOn(configurationService, 'get');
-    const controller: ConfigurationController =
-      module.get<ConfigurationController>(ConfigurationController);
+    const spy = jest.spyOn(retryPolicyService, 'get');
+    const controller: RetryPolicyController = module.get<RetryPolicyController>(
+      RetryPolicyController
+    );
     await controller.get(query);
     expect(spy).toBeCalled();
   });

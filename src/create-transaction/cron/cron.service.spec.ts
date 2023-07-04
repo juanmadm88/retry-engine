@@ -2,10 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CronService } from './cron.service';
 import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { CreateTransactionService } from '../create-transaction/create-transaction.service';
-import { ProxyService } from '../utils/proxy.service';
-import { MongoDBService } from '../database/mongodb-service/mongodb-service';
-import { TbkMallService } from '../tbk-mall/tbk-mall.service';
+import { CreateTransactionService } from '../create-transaction.service';
+import { ProxyService } from '../../utils/proxy.service';
+import { MongoDBService } from '../../database/mongodb-service/mongodb-service';
+import { TbkMallService } from '../../tbk-mall/tbk-mall.service';
 
 jest.mock('@payments/common-logger', () => {
   const mockedLogger = {

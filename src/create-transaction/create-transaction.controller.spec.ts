@@ -5,7 +5,7 @@ import { CreateTransactionService } from './create-transaction.service';
 import { MongoDBService } from '../database/mongodb-service/mongodb-service';
 import { TbkMallService } from '../tbk-mall/tbk-mall.service';
 import { ConfigService } from '@nestjs/config';
-import { ConfigurationService } from '../mongo-configuration/configuration.service';
+import { RetryPolicyService } from '../retry-policy/retry-policy.service';
 
 jest.mock('@payments/common-logger', () => {
   const mockedLogger = {
@@ -56,7 +56,7 @@ describe('CreateTransactionController', () => {
         MongoDBService,
         TbkMallService,
         ConfigService,
-        ConfigurationService,
+        RetryPolicyService,
         {
           provide: 'RABBIT_PRODUCER',
           useValue: {

@@ -38,6 +38,7 @@
     "@nestjs/typeorm": "^9.0.1",
     "@payments/common-logger": "^3.3.13",
     "@payments/http-client": "^0.0.8",
+    "cache-manager-redis-store": "^2.0.0",
     "amqp-connection-manager": "^4.1.10",
     "amqplib": "^0.10.3",
     "cache-manager": "^5.2.3",

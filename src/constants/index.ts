@@ -3,6 +3,7 @@ import { TypeCall } from '../utils/common';
 export class Constants {
   public static readonly REQUEST_TBK: string = 'RequestTransbank';
   public static readonly BUSINESS_NAMES: string[] = ['interop', 'bf'];
+  public static readonly TYPE_DATA: string[] = ['serie', 'nonserie'];
   public static readonly RESPONSE_TBK: string = 'ResponseTransbank';
   public static readonly REQUEST_TBK_MALL: string = 'RequestTbkMall';
   public static readonly RESPONSE_TBK_MALL: string = 'ResponseTbkMall';
@@ -77,7 +78,7 @@ export class Constants {
   };
   public static readonly PATHS: object = {
     TransactionLogDTO: 'create-transaction',
-    ConfigurationDTO: 'mongo-configuration'
+    ConfigurationDTO: 'retry-policy'
   };
   public static dtosDictionary: object = {
     TransactionLog: 'TransactionLogDTO',
