@@ -2,9 +2,11 @@ import { Error } from '../utils/common';
 
 const buildError = (anError: any = {}): Error => {
   const response: Error = {};
-  if (anError.code) response.code = anError.code;
-  if (anError.response?.status) response.status = anError.response.status;
-  response.message = anError.response?.data?.message || anError.message;
+  const responseData: any = anError.response?.data;
+  response.code = responseData?.code || anError.code;
+  response.status = responseData?.status || anError.response?.status;
+  response.message =
+    responseData?.message || responseData?.description || anError.message;
   return response;
 };
 

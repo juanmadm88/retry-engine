@@ -55,12 +55,14 @@ describe('TransactionLogMapper', () => {
     const typeCall: any = 'RequestCMR';
     const traceId: any = 'someTraceId';
     const data: any = {
-      options: {
-        body: {
-          transaction_type: 'SALE',
-          metadata: {
-            transaction: {
-              technical_reverse: true
+      request: {
+        options: {
+          body: {
+            transaction_type: 'SALE',
+            metadata: {
+              transaction: {
+                technical_reverse: true
+              }
             }
           }
         }

@@ -124,7 +124,7 @@ describe('HttpInterceptor ', () => {
       };
       await initializeApp();
       return request(app.getHttpServer())
-        .post('/configuration')
+        .post('/retry-policy')
         .set('x-flow-country', 'co')
         .send({})
         .then((response) => {
@@ -190,7 +190,7 @@ describe('HttpInterceptor ', () => {
       };
       await initializeApp();
       return request(app.getHttpServer())
-        .get('/configuration')
+        .get('/retry-policy')
         .set('x-flow-country', 'pe')
         .query('country=pe&acquirer=interop&enabled=true')
         .then((response) => {

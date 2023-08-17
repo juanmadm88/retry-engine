@@ -2,7 +2,6 @@ import {
   IsBoolean,
   IsString,
   IsOptional,
-  IsNotEmpty,
   IsEnum,
   ValidateNested,
   IsNumber,
@@ -15,7 +14,7 @@ import { NonSerieDTO } from './non-serie.dto';
 import { SerieDTO } from './serie.dto';
 /* istanbul ignore file */
 
-export class ConfigurationDTO {
+export class UpdateConfigurationDTO {
   constructor(args: any) {
     if (args) {
       const { time, enabled, country, _id, created_at, acquirer, failCodes } =
@@ -30,7 +29,7 @@ export class ConfigurationDTO {
     }
   }
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @Expose()
   @IsEnum(Constants.countryEnum, {
@@ -38,12 +37,13 @@ export class ConfigurationDTO {
   })
   private country: string;
 
+  @IsOptional()
   @ArrayNotEmpty()
   @Expose()
   @IsNumber({}, { each: true })
   private failCodes: Array<number>;
 
-  @IsNotEmpty()
+  @IsOptional()
   @Expose()
   @IsString()
   @IsEnum(Object.keys(Constants.typesCall), {
@@ -58,7 +58,7 @@ export class ConfigurationDTO {
   @Expose()
   private enabled?: boolean;
 
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested()
   @Expose()
   @Type(() => TimeDTO, {
@@ -77,7 +77,6 @@ export class ConfigurationDTO {
   time: NonSerieDTO | SerieDTO;
 
   @IsOptional()
-  @Expose()
   @Transform((value) => value.obj._id?.toString())
   private _id?: any;
 

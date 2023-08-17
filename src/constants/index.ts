@@ -19,6 +19,14 @@ export class Constants {
   public static readonly RESPONSE_BF: string = 'ResponseBF';
   public static readonly REQUEST_INTEROP: string = 'RequestInterOp';
   public static readonly RESPONSE_INTEROP: string = 'ResponseInterOp';
+  public static readonly REQUEST_NIUBIZ: string = 'RequestNiubiz';
+  public static readonly RESPONSE_NIUBIZ: string = 'ResponseNiubiz';
+  public static readonly TEF_REJECTED_STATUS: string = 'TEF_REJECTED';
+  public static readonly TEF_PENDING_STATUS: string = 'TEF_PENDING';
+  public static readonly SUCCESSFULLY_CREATED_RULE_MESSAGE: string =
+    'Successfully Created Rule';
+  public static readonly SUCCESSFULLY_UPDATED_RULE_MESSAGE: string =
+    'Successfully Updated Rule';
   public static readonly ERROR_INVALID_RESPONSE: string =
     'ERROR_INVALID_RESPONSE';
   public static readonly statusEnum: string[] = [
@@ -51,6 +59,15 @@ export class Constants {
       NOT_FOUND_ERROR_CODE: 'NOT_FOUND_TOKEN_TECH_REVERSE'
     }
   };
+  public static readonly METHODS_NAME: any = {
+    get: 'get',
+    set: 'set',
+    delete: 'delete',
+    handlerErrorForReprocessTransaction: 'handlerErrorForReprocessTransaction',
+    publishToTransactionProcessor: 'publishToTransactionProcessor',
+    handlerError: 'handlerError',
+    getConfiguration: 'getConfiguration'
+  };
   public static readonly typesCall: object = {
     transbank: { request: this.REQUEST_TBK, response: this.RESPONSE_TBK },
     tbk_mall: {
@@ -70,6 +87,14 @@ export class Constants {
     interop: {
       request: this.REQUEST_INTEROP,
       response: this.RESPONSE_INTEROP
+    },
+    niubiz: {
+      request: this.REQUEST_NIUBIZ,
+      response: this.RESPONSE_NIUBIZ
+    },
+    cmr: {
+      request: this.REQUEST_CMR,
+      response: this.RESPONSE_CMR
     }
   };
   public static readonly cmrTypeCall: TypeCall = {

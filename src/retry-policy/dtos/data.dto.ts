@@ -1,3 +1,4 @@
+import { Expose } from 'class-transformer';
 import { IsNotEmpty, IsNumber } from 'class-validator';
 /* istanbul ignore file */
 
@@ -10,10 +11,12 @@ export class DataDTO {
   }
   @IsNotEmpty()
   @IsNumber()
+  @Expose()
   private retries: number;
 
   @IsNotEmpty()
   @IsNumber()
+  @Expose()
   private timePeriod: number;
 
   public getRetries(): number {

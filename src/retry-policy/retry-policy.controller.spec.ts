@@ -4,6 +4,8 @@ import { MongoDBService } from '../database/mongodb-service/mongodb-service';
 import { RetryPolicyService } from './retry-policy.service';
 import { ConfigService } from '@nestjs/config';
 import { ConfigurationDTO } from './dtos';
+import { UpdateConfigurationDTO } from './dtos/update-configuration.dto';
+import { CacheService } from '../cache/cache.service';
 
 jest.mock('@payments/common-logger', () => {
   const mockedLogger = {
@@ -34,7 +36,18 @@ describe('RetryPolicyController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [RetryPolicyController],
-      providers: [MongoDBService, RetryPolicyService, ConfigService]
+      providers: [
+        MongoDBService,
+        RetryPolicyService,
+        ConfigService,
+        {
+          provide: CacheService,
+          useValue: {
+            get: jest.fn(),
+            set: jest.fn()
+          }
+        }
+      ]
     }).compile();
     controller = module.get<RetryPolicyController>(RetryPolicyController);
   });
@@ -60,6 +73,13 @@ describe('RetryPolicyController', () => {
         RetryPolicyController,
         ConfigService,
         {
+          provide: CacheService,
+          useValue: {
+            get: jest.fn(),
+            set: jest.fn()
+          }
+        },
+        {
           provide: RetryPolicyService,
           useValue: retryPolicyService
         }
@@ -73,7 +93,7 @@ describe('RetryPolicyController', () => {
     expect(spy).toBeCalled();
   });
   it('expect sufesfully resolve when calling update method ', async () => {
-    const body: ConfigurationDTO = new ConfigurationDTO({
+    const body: UpdateConfigurationDTO = new UpdateConfigurationDTO({
       country: 'pe',
       time: { '1': '100' },
       failCodes: [1, 2]
@@ -87,6 +107,13 @@ describe('RetryPolicyController', () => {
       providers: [
         RetryPolicyController,
         ConfigService,
+        {
+          provide: CacheService,
+          useValue: {
+            get: jest.fn(),
+            set: jest.fn()
+          }
+        },
         {
           provide: RetryPolicyService,
           useValue: retryPolicyService
@@ -114,6 +141,13 @@ describe('RetryPolicyController', () => {
       providers: [
         RetryPolicyController,
         ConfigService,
+        {
+          provide: CacheService,
+          useValue: {
+            get: jest.fn(),
+            set: jest.fn()
+          }
+        },
         {
           provide: RetryPolicyService,
           useValue: retryPolicyService

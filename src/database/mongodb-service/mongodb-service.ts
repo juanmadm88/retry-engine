@@ -15,8 +15,16 @@ export class MongoDBService {
   public async updateData(args: any, modelOptions: any): Promise<any> {
     try {
       const model = mongoose.model(modelOptions.name, modelOptions.schema);
-      await model.updateOne({ _id: args.id }, { $set: args.updateObject });
+      const response = await model.findOneAndUpdate(
+        { _id: args.id },
+        { $set: args.updateObject },
+        { new: true }
+      );
       this.logger.info(this.updateData.name, 'Data updated successfully');
+      return buildResponse(
+        Constants.dtosDictionary[modelOptions.name],
+        response
+      );
     } catch (error) {
       this.logger.error(this.updateData.name, 'Error updating data ', error);
       throw error;
@@ -41,14 +49,11 @@ export class MongoDBService {
         'appConfig.numberOfTrxToProcess'
       );
       const response = await model.find(filter).limit(size);
-      const transactionLogDTOs: Array<any> = response
-        ? response.map((element) => {
-            return buildResponse(
-              Constants.dtosDictionary[modelOptions.name],
-              element
-            );
-          })
-        : [];
+      const transactionLogDTOs: Array<any> = buildResponse(
+        Constants.dtosDictionary[modelOptions.name],
+        response
+      );
+
       if (response?.length > 0) {
         this.logger.info(
           this.saveData.name,

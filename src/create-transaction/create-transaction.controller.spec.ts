@@ -6,6 +6,7 @@ import { MongoDBService } from '../database/mongodb-service/mongodb-service';
 import { TbkMallService } from '../tbk-mall/tbk-mall.service';
 import { ConfigService } from '@nestjs/config';
 import { RetryPolicyService } from '../retry-policy/retry-policy.service';
+import { CacheService } from '../cache/cache.service';
 
 jest.mock('@payments/common-logger', () => {
   const mockedLogger = {
@@ -64,7 +65,7 @@ describe('CreateTransactionController', () => {
           }
         },
         {
-          provide: 'CACHE_MANAGER',
+          provide: CacheService,
           useValue: {
             get: jest.fn(),
             set: jest.fn()

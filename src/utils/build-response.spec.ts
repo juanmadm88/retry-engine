@@ -20,4 +20,8 @@ describe('buildResponse', () => {
     );
     expect(response).toBeInstanceOf(TransactionLogDTO);
   });
+  it('expect an empty array plain argument is empty array ', () => {
+    const response: TransactionLogDTO = buildResponse('TransactionLogDTO', []);
+    expect(response).toStrictEqual([]);
+  });
 });

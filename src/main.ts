@@ -53,7 +53,9 @@ async function bootstrap() {
       transform: true,
       whitelist: true,
       disableErrorMessages:
-        configService.get<string>('appConfig.env') == 'PROD' ? true : false
+        configService.get<string>('appConfig.env')?.toUpperCase() == 'PROD'
+          ? true
+          : false
     })
   );
 

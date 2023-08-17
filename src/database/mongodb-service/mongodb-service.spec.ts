@@ -39,6 +39,7 @@ jest.mock('@payments/common-logger', () => {
   };
 });
 import { MongoDBService } from './mongodb-service';
+import { ConfigurationDTO } from '../../retry-policy/dtos';
 describe('MongoDBService', () => {
   let service: MongoDBService;
   beforeEach(async () => {
@@ -105,7 +106,7 @@ describe('MongoDBService', () => {
   });
   it('expect getData to return empty array ', async () => {
     const mockLimit = jest.fn().mockImplementation(() => {
-      return undefined;
+      return [];
     });
     mockModel.mockImplementationOnce(() => {
       return {
@@ -117,7 +118,7 @@ describe('MongoDBService', () => {
       };
     });
     const spy = jest.spyOn(service as any, 'getData');
-    const response: any = await service.getData({}, {});
+    const response: any = await service.getData({}, { name: 'TransactionLog' });
     expect(spy).toBeCalled();
     expect(response.length === 0).toBe(true);
   });
@@ -144,7 +145,7 @@ describe('MongoDBService', () => {
   it('expect an Error when calling updateData ', async () => {
     mockModel.mockImplementationOnce(() => {
       return {
-        updateOne: () => {
+        findOneAndUpdate: () => {
           return Promise.reject({});
         }
       };
@@ -158,8 +159,12 @@ describe('MongoDBService', () => {
   it('expect success when calling updateData ', async () => {
     mockModel.mockImplementationOnce(() => {
       return {
-        updateOne: () => {
-          return Promise.resolve({});
+        findOneAndUpdate: () => {
+          return Promise.resolve({
+            _id: '100',
+            country: 'pe',
+            acquirer: 'interop'
+          });
         }
       };
     });
@@ -168,6 +173,9 @@ describe('MongoDBService', () => {
       id: '1234',
       updateObject: {}
     };
-    await service.updateData(args, {});
+    const response: ConfigurationDTO = await service.updateData(args, {
+      name: 'Configuration'
+    });
+    expect(response.getAcquirer()).toBe('interop');
   });
 });

@@ -53,7 +53,7 @@ describe('throwErrorIfAllowed', () => {
       await throwErrorIfAllowed(
         'interop',
         { status: 2, description: 'some description' },
-        ['3', '5']
+        ['2', '3', '5']
       );
     } catch (error) {
       expect(error).toBeDefined();
